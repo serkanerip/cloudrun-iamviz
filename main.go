@@ -79,7 +79,7 @@ func do(_ *cobra.Command, _ []string) error {
 	}
 
 	for _, r := range regions {
-		log.Printf("--> %s", r)
+		log.Printf("-->[%s] %s ", r.LocationId, r.DisplayName)
 	}
 
 	regionToServicesMap := make(map[*runv1.Location][]*runv1.Service)
