@@ -85,7 +85,7 @@ func do(_ *cobra.Command, _ []string) error {
 	regionToServicesMap := make(map[*runv1.Location][]*runv1.Service)
 	servicePermissions := make(map[ServiceRecord][]string)
 
-	log.Printf("PROJECTS:")
+	log.Printf("SERVICES:")
 	svcs, err := getCloudRunServices(ctx, project, regions)
 	if err != nil {
 		return errors.Wrap(err, "failed to query services in all regions")
@@ -105,7 +105,6 @@ func do(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-
 	var b bytes.Buffer
 	mw := io.MultiWriter(&b, os.Stdout)
 	render(mw, regionToServicesMap, servicePermissions)
@@ -123,21 +122,20 @@ func do(_ *cobra.Command, _ []string) error {
 	}
 	log.Printf("converted to svg successfully")
 
-	fp := filepath.Join(os.TempDir(),"iamviz.svg") // TODO add random name
+	fp := filepath.Join(os.TempDir(), "iamviz.svg") // TODO add random name
 	if err := ioutil.WriteFile(fp, svgout, 0644); err != nil {
 		return errors.Wrap(err, "failed to write to temp file")
 	}
 
 	log.Printf("written file to: %s", fp)
 	log.Printf("launching in browser...")
-	url := "file://"+filepath.ToSlash(fp)
+	url := "file://" + filepath.ToSlash(fp)
 	return openInBrowser(url)
 }
 
 func render(out io.Writer,
 	regionsToServices map[*runv1.Location][]*runv1.Service,
 	permissionsMap map[ServiceRecord][]string) {
-
 
 	svcAccountsToTargets := make(map[string][]ServiceRecord)
 	for svc, callers := range permissionsMap {
@@ -161,20 +159,20 @@ func render(out io.Writer,
 	//p(`  }`)
 
 	for region, svcs := range regionsToServices {
-			p("  subgraph %s {", regionName(region.LocationId))
-			p("  style=dashed;")
-			p("  node [style=filled,shape=box];")
-			p(`  label = "%s (%s)";`, region.LocationId, region.DisplayName)
-			for _, s := range svcs {
-				svcURL := fmt.Sprintf("https://console.cloud.google.com/run/detail/%s/%s/revisions?project=%s",
-					region.LocationId, s.Metadata.Name, s.Metadata.Namespace)
+		p("  subgraph %s {", regionName(region.LocationId))
+		p("  style=dashed;")
+		p("  node [style=filled,shape=box];")
+		p(`  label = "%s (%s)";`, region.LocationId, region.DisplayName)
+		for _, s := range svcs {
+			svcURL := fmt.Sprintf("https://console.cloud.google.com/run/detail/%s/%s/revisions?project=%s",
+				region.LocationId, s.Metadata.Name, s.Metadata.Namespace)
 
-				nodeName := svcNode(s, region.LocationId)
-				color := colorFor(s.Metadata.Name)
-				p(`    "%s"[href="%s",color=%s,label = <%s<br/><font point-size='9'>%s</font>> ];`,
-					nodeName, svcURL, color, s.Metadata.Name, s.Spec.Template.Spec.ServiceAccountName) // service node
-			}
-			p("  }")
+			nodeName := svcNode(s, region.LocationId)
+			color := colorFor(s.Metadata.Name)
+			p(`    "%s"[href="%s",color=%s,label = <%s<br/><font point-size='9'>%s</font>> ];`,
+				nodeName, svcURL, color, s.Metadata.Name, s.Spec.Template.Spec.ServiceAccountName) // service node
+		}
+		p("  }")
 	}
 
 	for region, svcs := range regionsToServices {
@@ -334,7 +332,6 @@ func openInBrowser(url string) error {
 		return fmt.Errorf("unsupported platform %s", runtime.GOOS)
 	}
 }
-
 
 func hash(s string) uint32 {
 	h := fnv.New32a()
