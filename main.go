@@ -47,6 +47,7 @@ func init() {
 	log.SetOutput(os.Stderr)
 	// add flags here
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.Flags().BoolP("quite", "q", false, "Only display graph output.")
 }
 
 func main() {
@@ -60,7 +61,11 @@ func main() {
 	}
 }
 
-func do(_ *cobra.Command, _ []string) error {
+func do(cobraCmd *cobra.Command, _ []string) error {
+	quiteFlag, _ := cobraCmd.Flags().GetBool("quite")
+	if quiteFlag != false {
+		log.SetOutput(ioutil.Discard)
+	}
 	ctx := context.Background()
 	project, err := inferGCPProject()
 	if err != nil {
